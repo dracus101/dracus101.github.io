@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ad Player</title>
-    <style> 
-        body { margin: 0; background-color: #000; overflow: hidden; } 
-        /* Ensure player fills the bot's hidden window */
-        #video-container { width: 100vw; height: 100vh; }
-    </style>
     <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
+    <style> 
+        body { margin: 0; background: black; overflow: hidden; } 
+        /* Primary Video Container */
+        #video-container { width: 100vw; height: 100vh; display: block; background: black; }
+        /* Backup Iframe Container (Hidden by default) */
+        #backup-frame { 
+            width: 100vw; height: 100vh; border: none; display: none; 
+            position: absolute; top: 0; left: 0; z-index: 999; background: white;
+        }
+    </style>
 </head>
 <body>
 
@@ -19,36 +24,84 @@
         </video>
     </div>
 
+    <iframe id="backup-frame"></iframe>
+
     <script>
+        // --- CONFIGURATION START ---
+        
+        // 1. HilltopAds Video Tag (Primary)
+        const videoTag = 'https://homelybottle.com/dHmIFHz/d.GRNKvHZtGXUn/hemmM9GuyZdUPlYkuP/T/YF3HMcjQQb2mNRTZQ/t/Ncj/c_ycN/DeYc1qNiQe';
+        
+        // 2. Monetag Direct Link (Backup)
+        const backupLink = 'https://otieu.com/4/10310118'; 
+
+        // 3. Cycle Time (10 Minutes = 600,000 milliseconds)
+        // 10 mins is the safe "High CPM" frequency.
+        const cycleTime = 600000; 
+        
+        // --- CONFIGURATION END ---
+
         var myPlayer = fluidPlayer('my-video', {
             layoutControls: {
-                primaryColor: false,
-                posterImage: false,
-                playButtonShowing: false,
-                playPauseAnimation: false,
-                fillToContainer: true,
-                autoPlay: true, // Force start
-                mute: true      // Required for autoplay to work
+                primaryColor: false, posterImage: false, playButtonShowing: false, 
+                playPauseAnimation: false, fillToContainer: true, 
+                autoPlay: true, mute: true
             },
             vastOptions: {
-                adList: [
-                    {
-                        roll: 'preRoll',
-                        // YOUR EXOCLICK TAG IS BELOW:
-                        // vastTag: 'https://s.magsrv.com/v1/vast.php?idzone=5796538' 
-                        vastTag: 'https://homelybottle.com/d.mrF/zRddGmNov/Z/G/UY/Ve/me9DuDZJUPl/k/PST/Yd3yMajdQK2JNSTFQLtxN-jEcmyzNYD/Yw1GN-Qo'
-                        
+                adList: [{ roll: 'preRoll', vastTag: videoTag }],
+                vastAdvanced: {
+                    // SCENARIO A: Video Fails -> Load Backup
+                    noVastVideoCallback: function() { 
+                        console.log("Video Failed/No Fill. Switching to Backup.");
+                        loadBackup(); 
+                    },
+                    // SCENARIO B: Video Plays -> Wait for end -> Hide
+                    vastVideoEndedCallback: function() {
+                        console.log("Video Ad Finished.");
+                        hideAndSchedule();
                     }
-                ]
+                }
             }
         });
 
-        // AUTO-REFRESH TIMER
-        // Reloads this page every 65 seconds to trigger a NEW ad view
-        setTimeout(function(){
-           window.location.reload();
-        }, 65000); 
-    </script>
+        // Function to Switch to Monetag Backup
+        function loadBackup() {
+            // Hide Video Player
+            document.getElementById('video-container').style.display = 'none';
+            
+            // Show Monetag Iframe
+            var frame = document.getElementById('backup-frame');
+            frame.src = backupLink;
+            frame.style.display = 'block';
 
+            // AUTO-CLOSE TIMER:
+            // Since Monetag pages don't close themselves, we force close it after 25 seconds
+            // This simulates a 25s video ad experience.
+            setTimeout(function() {
+                console.log("Backup Ad Duration Over. Hiding.");
+                frame.style.display = 'none'; // Hide the ad
+                frame.src = ""; // Stop loading to save data
+                scheduleNextCycle(); // Start the 10 min wait
+            }, 25000); 
+        }
+
+        // Failsafe: Handle Generic Player Errors
+        myPlayer.on('error', function() { 
+            console.log("Player Error Detected.");
+            loadBackup(); 
+        });
+
+        // Function to Clean Up and Wait
+        function hideAndSchedule() {
+            document.getElementById('video-container').style.display = 'none';
+            document.getElementById('backup-frame').style.display = 'none';
+            console.log("Ad sequence done. Waiting " + (cycleTime/1000) + " seconds...");
+            
+            setTimeout(function(){
+               window.location.reload();
+            }, cycleTime);
+        }
+
+    </script>
 </body>
 </html>
