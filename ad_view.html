@@ -6,20 +6,17 @@
     <title>Ad Processor</title>
     <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
     <style> 
-        body { margin: 0; background: #000; overflow: hidden; } 
-        /* The Player */
+        body { margin: 0; background: #000; overflow: hidden; font-family: monospace; font-size: 14px; } 
         #video-container { width: 100vw; height: 100vh; display: block; }
-        /* A tiny status indicator in the corner so you know it's alive */
-        #status { 
-            position: absolute; top: 10px; left: 10px; z-index: 99; 
-            color: #00ff00; font-family: monospace; font-size: 12px;
-            background: rgba(0,0,0,0.5); padding: 5px; pointer-events: none;
+        #log { 
+            position: absolute; top: 10px; left: 10px; z-index: 100; 
+            color: #00ff00; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #00ff00;
         }
     </style>
 </head>
 <body>
 
-    <div id="status">Initializing...</div>
+    <div id="log">Status: Initializing...</div>
 
     <div id="video-container">
         <video id="my-video">
@@ -29,12 +26,17 @@
 
     <script>
         // --- SETTINGS ---
-        const videoTag = 'https://homelybottle.com/d.mrf/zRddGmNov/Z/G/UY/Ve/me9DuDZJUP1/k/PST/Yd3yMajdQK2JNSTFQLtxN-jEcmyzNYD/Yw1GN-Qo';
-        const refreshOnSuccess = 600000; // 10 Minutes (If ad plays)
-        const refreshOnFail = 3000;      // 3 Seconds (If ad fails)
+        const videoTag = 'https://homelybottle.com/dHmIFHz/d.GRNKvHZtGXUn/hemmM9GuyZdUPlYkuP/T/YF3HMcjQQb2mNRTZQ/t/Ncj/c_ycN/DeYc1qNiQe';
+        const successWait = 600000; // 10 Minutes (If Ad Plays)
+        const failWait = 5000;      // 5 Seconds (If No Fill)
         // ----------------
 
-        let adPlayed = false;
+        let didAdPlay = false; // The Truth Flag
+
+        function log(msg) {
+            document.getElementById('log').innerText = "Status: " + msg;
+            console.log(msg);
+        }
 
         var myPlayer = fluidPlayer('my-video', {
             layoutControls: {
@@ -43,49 +45,54 @@
                 autoPlay: true, mute: true
             },
             vastOptions: {
-                allowVPAID: true, 
+                allowVPAID: true, // Required for Hilltop
                 adList: [{ roll: 'preRoll', vastTag: videoTag }],
                 vastAdvanced: {
-                    // 1. IF AD FAILS (No Fill / Error)
+                    // 1. Explicit Failure (Hilltop says "No Ad")
                     noVastVideoCallback: function() { 
-                        setStatus("No Ad Available. Retrying...");
-                        retry();
+                        log("Ad Error / No Fill. Retrying in 5s...");
+                        retry(); 
                     },
-                    // 2. IF AD STARTS
+                    // 2. Explicit Success (Ad actually started)
                     vastVideoStartedCallback: function() {
-                        setStatus("Ad Playing (Revenue Generating)");
-                        adPlayed = true;
+                        didAdPlay = true; // Mark as success
+                        log("Ad Started! Watching...");
                     },
-                    // 3. IF AD ENDS
+                    // 3. Ad Finished
                     vastVideoEndedCallback: function() {
-                        setStatus("Ad Finished. Waiting 10 mins...");
-                        // Hide player to show black screen
-                        document.getElementById('video-container').style.display = 'none';
-                        setTimeout(() => window.location.reload(), refreshOnSuccess);
+                        log("Ad Completed. Money made. Waiting 10m...");
+                        // Don't reload yet, wait for content to finish
                     }
                 }
             }
         });
 
-        // SAFETY TIMER: If nothing happens for 8 seconds, assume broken and reload
-        setTimeout(function() {
-            if (!adPlayed) {
-                setStatus("Timeout/Stuck. Force Reloading...");
+        // 4. THE TRUTH CHECKER (Main Video Ended)
+        // This fires when the player finishes whatever it was playing (Ad OR Placeholder)
+        myPlayer.on('ended', function() {
+            if (didAdPlay) {
+                // If the Ad flag is TRUE, then we really succeeded.
+                log("Cycle Complete (Success). Refreshing in 10 mins.");
+                document.getElementById('video-container').style.display = 'none'; // Hide player
+                setTimeout(() => window.location.reload(), successWait);
+            } else {
+                // If the Ad flag is FALSE, it means we skipped straight to the placeholder.
+                log("Silent Fail (Skipped to Content). Retrying in 5s...");
                 retry();
             }
-        }, 8000); 
+        });
+
+        // 5. Watchdog (In case it freezes)
+        setTimeout(function() {
+            if (!didAdPlay) {
+                log("Watchdog: Stuck on black screen. Force Retry.");
+                retry();
+            }
+        }, 8000);
 
         function retry() {
-            setTimeout(() => window.location.reload(), refreshOnFail);
+            setTimeout(() => window.location.reload(), failWait);
         }
-
-        function setStatus(msg) {
-            document.getElementById('status').innerText = msg;
-            console.log(msg);
-        }
-
-        // Generic Player Error
-        myPlayer.on('error', function() { retry(); });
 
     </script>
 </body>
