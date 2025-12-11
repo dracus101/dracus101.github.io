@@ -11,6 +11,8 @@
             --glass-border: rgba(255, 255, 255, 0.08);
             --text-white: #ffffff;
             --text-gray: #aaaaaa;
+            --cursor-x: 50%;
+            --cursor-y: 50%;
         }
 
         body {
@@ -20,34 +22,58 @@
             color: var(--text-white);
             overflow-x: hidden;
             min-height: 100vh;
+            cursor: default; /* Hide default cursor if you want, or keep it */
         }
 
-        /* Smoke Animation Effect */
+        /* Ambient Smoke Animation */
         .smoke-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
-            filter: blur(50px);
-            opacity: 0.4;
+            z-index: -2;
+            filter: blur(60px);
+            opacity: 0.5;
+            pointer-events: none;
         }
 
         .smoke {
             position: absolute;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(50,50,50,1) 0%, rgba(0,0,0,0) 70%);
+            background: radial-gradient(circle, rgba(40,40,40,0.8) 0%, rgba(0,0,0,0) 70%);
             animation: drift infinite alternate ease-in-out;
         }
 
-        .s1 { width: 600px; height: 600px; top: -200px; left: -100px; animation-duration: 25s; }
-        .s2 { width: 500px; height: 500px; bottom: -100px; right: -150px; animation-duration: 30s; animation-delay: -5s; }
-        .s3 { width: 400px; height: 400px; top: 40%; left: 30%; animation-duration: 35s; animation-delay: -10s; background: radial-gradient(circle, rgba(80,80,80,0.8) 0%, rgba(0,0,0,0) 70%); }
+        .s1 { width: 700px; height: 700px; top: -300px; left: -200px; animation-duration: 35s; }
+        .s2 { width: 600px; height: 600px; bottom: -200px; right: -250px; animation-duration: 40s; animation-delay: -8s; }
+        .s3 { width: 500px; height: 500px; top: 30%; left: 20%; animation-duration: 45s; animation-delay: -15s; background: radial-gradient(circle, rgba(60,60,60,0.6) 0%, rgba(0,0,0,0) 70%); }
 
         @keyframes drift {
             0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(50px, -50px) scale(1.1); }
+            100% { transform: translate(80px, -40px) scale(1.1); }
+        }
+
+        /* Interactive Cursor Smoke */
+        .cursor-smoke {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(20,20,20,0.8) 0%, rgba(0,0,0,0) 60%);
+            border-radius: 50%;
+            transform: translate(calc(var(--cursor-x) - 50%), calc(var(--cursor-y) - 50%));
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(50px);
+            opacity: 0; /* Hidden until moved */
+            transition: opacity 0.3s ease, transform 0.15s ease-out;
+            mix-blend-mode: multiply; /* Blends darkly with background */
+        }
+        
+        body:hover .cursor-smoke {
+            opacity: 1;
         }
 
         /* Navbar */
@@ -68,7 +94,7 @@
             font-weight: 800;
             letter-spacing: 3px;
             text-transform: uppercase;
-            background: linear-gradient(45deg, #fff, #888);
+            background: linear-gradient(45deg, #fff, #999);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -82,6 +108,7 @@
             align-items: center;
             text-align: center;
             padding: 0 20px;
+            position: relative;
         }
 
         h1 {
@@ -113,13 +140,13 @@
 
         .glass-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(20px) saturate(150%);
-            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            backdrop-filter: blur(25px) saturate(130%);
+            -webkit-backdrop-filter: blur(25px) saturate(130%);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 50px 40px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
         }
@@ -129,13 +156,14 @@
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
         }
 
         .glass-card:hover {
             transform: translateY(-15px) scale(1.02);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 15px 40px 0 rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .glass-card h3 {
@@ -146,15 +174,17 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            color: #fff;
         }
         
         .icon-box {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.08);
             padding: 12px;
             border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .glass-card p {
@@ -179,6 +209,7 @@
             position: relative;
             overflow: hidden;
             z-index: 1;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
         }
 
         .btn-main::after {
@@ -186,21 +217,21 @@
             position: absolute;
             bottom: 0; left: 0;
             width: 100%; height: 0%;
-            background: #d1d1d1;
+            background: #c0c0c0;
             transition: all 0.3s;
             z-index: -1;
         }
 
         .btn-main:hover::after { height: 100%; }
-        .btn-main:hover { color: #000; box-shadow: 0 0 30px rgba(255,255,255,0.3); }
+        .btn-main:hover { color: #000; box-shadow: 0 0 40px rgba(255,255,255,0.25); transform: scale(1.02); }
 
         /* Status Badge */
         .status-badge {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             color: var(--text-white);
             padding: 10px 25px;
             border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             font-weight: 600;
             margin-bottom: 30px;
             display: inline-block;
@@ -215,7 +246,7 @@
             border-top: 1px solid var(--glass-border);
             font-size: 0.8rem;
             color: #555;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
         }
 
         /* Mobile Responsive */
@@ -224,6 +255,7 @@
             nav { padding: 20px; }
             .hero { height: auto; padding: 120px 20px 60px; }
             .glass-card { padding: 30px 25px; }
+            .cursor-smoke { display: none; /* Optional: Disable on mobile for performance */ }
         }
     </style>
 </head>
@@ -234,6 +266,8 @@
         <div class="smoke s2"></div>
         <div class="smoke s3"></div>
     </div>
+    
+    <div class="cursor-smoke"></div>
 
     <nav>
         <div class="logo">KORE CONTROL</div>
@@ -266,6 +300,44 @@
     <footer>
         <p>&copy; 2025 koreControl Project. Educational and testing purposes only.<br>Not affiliated with Gravity or Ragnarok Online.</p>
     </footer>
+
+    <script>
+        // Interactive Smoke Script
+        const cursorSmoke = document.querySelector('.cursor-smoke');
+        
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        
+        // Smooth movement variables
+        let cursorX = mouseX;
+        let cursorY = mouseY;
+        const delay = 0.1; // Lower = faster follow
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        // For mobile touch support
+        document.addEventListener('touchmove', (e) => {
+            mouseX = e.touches[0].clientX;
+            mouseY = e.touches[0].clientY;
+        }, { passive: true });
+
+        function animate() {
+            // Smoothly move the cursor smoke towards the actual mouse position
+            cursorX += (mouseX - cursorX) * delay;
+            cursorY += (mouseY - cursorY) * delay;
+            
+            // Update CSS variables
+            document.documentElement.style.setProperty('--cursor-x', cursorX + 'px');
+            document.documentElement.style.setProperty('--cursor-y', cursorY + 'px');
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+    </script>
 
 </body>
 </html>
