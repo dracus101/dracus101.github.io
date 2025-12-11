@@ -7,73 +7,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(20, 20, 20, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --text-white: #ffffff;
-            --text-gray: #aaaaaa;
-            --cursor-x: 50%;
-            --cursor-y: 50%;
+            --text-gray: #b0b0b0;
         }
 
         body {
             margin: 0;
+            padding: 0;
             font-family: 'Montserrat', sans-serif;
-            background-color: #000000;
+            background-color: #050505; /* Deep Charcoal, not Pitch Black */
             color: var(--text-white);
             overflow-x: hidden;
             min-height: 100vh;
-            cursor: default; /* Hide default cursor if you want, or keep it */
         }
 
-        /* Ambient Smoke Animation */
-        .smoke-container {
+        /* The Canvas sits behind everything */
+        #smokeCanvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -2;
-            filter: blur(60px);
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .smoke {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(40,40,40,0.8) 0%, rgba(0,0,0,0) 70%);
-            animation: drift infinite alternate ease-in-out;
-        }
-
-        .s1 { width: 700px; height: 700px; top: -300px; left: -200px; animation-duration: 35s; }
-        .s2 { width: 600px; height: 600px; bottom: -200px; right: -250px; animation-duration: 40s; animation-delay: -8s; }
-        .s3 { width: 500px; height: 500px; top: 30%; left: 20%; animation-duration: 45s; animation-delay: -15s; background: radial-gradient(circle, rgba(60,60,60,0.6) 0%, rgba(0,0,0,0) 70%); }
-
-        @keyframes drift {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(80px, -40px) scale(1.1); }
-        }
-
-        /* Interactive Cursor Smoke */
-        .cursor-smoke {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(20,20,20,0.8) 0%, rgba(0,0,0,0) 60%);
-            border-radius: 50%;
-            transform: translate(calc(var(--cursor-x) - 50%), calc(var(--cursor-y) - 50%));
-            pointer-events: none;
             z-index: -1;
-            filter: blur(50px);
-            opacity: 0; /* Hidden until moved */
-            transition: opacity 0.3s ease, transform 0.15s ease-out;
-            mix-blend-mode: multiply; /* Blends darkly with background */
-        }
-        
-        body:hover .cursor-smoke {
-            opacity: 1;
+            background: linear-gradient(to bottom, #0a0a0a, #000000);
         }
 
         /* Navbar */
@@ -94,9 +52,8 @@
             font-weight: 800;
             letter-spacing: 3px;
             text-transform: uppercase;
-            background: linear-gradient(45deg, #fff, #999);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
 
         /* Hero Section */
@@ -109,6 +66,7 @@
             text-align: center;
             padding: 0 20px;
             position: relative;
+            z-index: 5;
         }
 
         h1 {
@@ -118,6 +76,7 @@
             margin-bottom: 20px;
             text-transform: uppercase;
             letter-spacing: -2px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
         p.subtitle {
@@ -126,6 +85,7 @@
             margin-bottom: 40px;
             color: var(--text-gray);
             font-weight: 400;
+            text-shadow: 0 2px 5px rgba(0,0,0,1);
         }
 
         /* Liquid Glass Cards */
@@ -136,34 +96,25 @@
             max-width: 1200px;
             margin: 0 auto 100px;
             padding: 0 30px;
+            z-index: 5;
+            position: relative;
         }
 
         .glass-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(25px) saturate(130%);
-            -webkit-backdrop-filter: blur(25px) saturate(130%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 50px 40px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
         }
 
         .glass-card:hover {
-            transform: translateY(-15px) scale(1.02);
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.8);
-            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(40, 40, 40, 0.7);
         }
 
         .glass-card h3 {
@@ -176,15 +127,11 @@
             gap: 15px;
             color: #fff;
         }
-        
+
         .icon-box {
-            background: rgba(255,255,255,0.08);
-            padding: 12px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 10px;
         }
 
         .glass-card p {
@@ -194,7 +141,7 @@
             margin: 0;
         }
 
-        /* Premium Button */
+        /* Button */
         .btn-main {
             padding: 22px 70px;
             font-size: 1.2rem;
@@ -204,39 +151,13 @@
             color: #000;
             background: #ffffff;
             border-radius: 4px;
-            transition: all 0.3s ease;
-            letter-spacing: 2px;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
+            transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 0 20px rgba(255,255,255,0.1);
         }
 
-        .btn-main::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100%; height: 0%;
-            background: #c0c0c0;
-            transition: all 0.3s;
-            z-index: -1;
-        }
-
-        .btn-main:hover::after { height: 100%; }
-        .btn-main:hover { color: #000; box-shadow: 0 0 40px rgba(255,255,255,0.25); transform: scale(1.02); }
-
-        /* Status Badge */
-        .status-badge {
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-white);
-            padding: 10px 25px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            font-weight: 600;
-            margin-bottom: 30px;
-            display: inline-block;
-            letter-spacing: 1px;
-            backdrop-filter: blur(10px);
+        .btn-main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(255,255,255,0.4);
         }
 
         /* Footer */
@@ -246,40 +167,35 @@
             border-top: 1px solid var(--glass-border);
             font-size: 0.8rem;
             color: #555;
-            background: rgba(0,0,0,0.9);
+            background: #050505;
+            position: relative;
+            z-index: 5;
         }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             h1 { font-size: 3rem; }
             nav { padding: 20px; }
-            .hero { height: auto; padding: 120px 20px 60px; }
-            .glass-card { padding: 30px 25px; }
-            .cursor-smoke { display: none; /* Optional: Disable on mobile for performance */ }
+            .hero { padding: 120px 20px 60px; height: auto; }
         }
     </style>
 </head>
 <body>
 
-    <div class="smoke-container">
-        <div class="smoke s1"></div>
-        <div class="smoke s2"></div>
-        <div class="smoke s3"></div>
-    </div>
-    
-    <div class="cursor-smoke"></div>
+    <canvas id="smokeCanvas"></canvas>
 
     <nav>
         <div class="logo">KORE CONTROL</div>
-        <div style="font-weight: 600; color: var(--text-gray); font-size: 0.9rem;">V2.1 STABLE</div>
+        <div style="font-weight: 600; color: #666; font-size: 0.9rem;">V2.1 STABLE</div>
     </nav>
 
     <div class="hero">
-        <div class="status-badge">● STATUS: UNDETECTED</div>
+        <div style="padding: 10px 20px; border: 1px solid #333; border-radius: 30px; margin-bottom: 30px; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);">
+            ● STATUS: UNDETECTED
+        </div>
         <h1>Dominate<br>Ragnarok.</h1>
         <p class="subtitle">The only visual AI automation tool that mimics human behavior perfectly. No injection. No packets. Pure optical logic.</p>
         <a href="#" class="btn-main">Download Client</a>
-        <p style="margin-top: 25px; font-size: 0.85rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">Windows 10 / 11 Compatible</p>
+        <p style="margin-top: 25px; font-size: 0.85rem; color: #555; text-transform: uppercase; letter-spacing: 1px;">Windows 10 / 11 Compatible</p>
     </div>
 
     <div class="features-grid">
@@ -298,45 +214,104 @@
     </div>
 
     <footer>
-        <p>&copy; 2025 koreControl Project. Educational and testing purposes only.<br>Not affiliated with Gravity or Ragnarok Online.</p>
+        <p>&copy; 2025 koreControl Project. Educational use only.</p>
     </footer>
 
     <script>
-        // Interactive Smoke Script
-        const cursorSmoke = document.querySelector('.cursor-smoke');
+        const canvas = document.getElementById('smokeCanvas');
+        const ctx = canvas.getContext('2d');
         
-        let mouseX = window.innerWidth / 2;
-        let mouseY = window.innerHeight / 2;
-        
-        // Smooth movement variables
-        let cursorX = mouseX;
-        let cursorY = mouseY;
-        const delay = 0.1; // Lower = faster follow
+        // Resize Canvas to fit screen
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+        // Mouse Tracker
+        let mouse = { x: null, y: null };
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
         });
-        
-        // For mobile touch support
-        document.addEventListener('touchmove', (e) => {
-            mouseX = e.touches[0].clientX;
-            mouseY = e.touches[0].clientY;
-        }, { passive: true });
+        window.addEventListener('touchmove', (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        }, {passive: true});
 
+        // Particle System
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                // Random size for depth effect
+                this.size = Math.random() * 150 + 50; 
+                // Speed
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                // Brightness (Gray smoke)
+                this.color = 'rgba(255, 255, 255, 0.03)';
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Mouse Interaction (Smoke runs away from mouse)
+                if (mouse.x != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    const forceDirectionX = dx / distance;
+                    const forceDirectionY = dy / distance;
+                    const maxDistance = 300;
+                    
+                    if (distance < maxDistance) {
+                        const force = (maxDistance - distance) / maxDistance;
+                        const directionX = forceDirectionX * force * 5;
+                        const directionY = forceDirectionY * force * 5;
+                        this.x -= directionX;
+                        this.y -= directionY;
+                    }
+                }
+
+                // Wrap around screen
+                if (this.x > canvas.width + this.size) this.x = 0 - this.size;
+                if (this.x < 0 - this.size) this.x = canvas.width + this.size;
+                if (this.y > canvas.height + this.size) this.y = 0 - this.size;
+                if (this.y < 0 - this.size) this.y = canvas.height + this.size;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Create 100 Particles
+        const particleArray = [];
+        function init() {
+            particleArray.length = 0;
+            for (let i = 0; i < 60; i++) {
+                particleArray.push(new Particle());
+            }
+        }
+        init();
+
+        // Animation Loop
         function animate() {
-            // Smoothly move the cursor smoke towards the actual mouse position
-            cursorX += (mouseX - cursorX) * delay;
-            cursorY += (mouseY - cursorY) * delay;
-            
-            // Update CSS variables
-            document.documentElement.style.setProperty('--cursor-x', cursorX + 'px');
-            document.documentElement.style.setProperty('--cursor-y', cursorY + 'px');
-            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particleArray.length; i++) {
+                particleArray[i].update();
+                particleArray[i].draw();
+            }
             requestAnimationFrame(animate);
         }
-        
         animate();
+
     </script>
 
 </body>
