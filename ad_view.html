@@ -6,11 +6,20 @@
     <title>Ad Player</title>
     <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
     <style> 
-        body { margin: 0; background: black; overflow: hidden; } 
-        #video-container { width: 100vw; height: 100vh; display: block; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: monospace; color: #00ff00; } 
+        #video-container { width: 100vw; height: 100vh; display: block; position: absolute; top:0; left:0; z-index: 10; }
+        #status-log { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; z-index: 5; width: 90%;
+        }
     </style>
 </head>
 <body>
+
+    <div id="status-log">
+        <h2>AD SYSTEM STATUS</h2>
+        <p id="msg">Initializing...</p>
+    </div>
 
     <div id="video-container">
         <video id="my-video">
@@ -19,13 +28,16 @@
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const videoTag = 'https://homelybottle.com/dHmIFHz/d.GRNKvHZtGXUn/hemmM9GuyZdUPlYkuP/T/YF3HMcjQQb2mNRTZQ/t/Ncj/c_ycN/DeYc1qNiQe';
-        const cycleTime = 600000; // 10 Minutes Success Timer
-        const failTime = 5000;    // 5 Seconds Retry Timer
-        // ---------------------
+        // CONFIGURATION
+        // Use the link from your SCREENSHOT (it looked more correct than the text one)
+        const videoTag = 'https://homelybottle.com/d.mrf/zRddGmNov/Z/G/UY/Ve/me9DuDZJUP1/k/PST/Yd3yMajdQK2JNSTFQLtxN-jEcmyzNYD/Yw1GN-Qo';
+        const cycleTime = 600000; // 10 Minutes (Success)
+        const failTime = 30000;   // 30 Seconds (Retry)
 
-        let adSuccess = false;
+        function updateStatus(text) {
+            document.getElementById('msg').innerText = text;
+            console.log(text);
+        }
 
         var myPlayer = fluidPlayer('my-video', {
             layoutControls: {
@@ -34,52 +46,46 @@
                 autoPlay: true, mute: true
             },
             vastOptions: {
+                allowVPAID: true, // Crucial for some Hilltop ads
                 adList: [{ roll: 'preRoll', vastTag: videoTag }],
                 vastAdvanced: {
-                    // IF VIDEO FAILS:
                     noVastVideoCallback: function() { 
-                        console.log("No Ad. Retrying...");
-                        quickRetry(); 
+                        updateStatus("Ad Inventory Empty (No Fill). Retrying in 30s...");
+                        scheduleRetry(failTime); 
                     },
-                    // IF VIDEO STARTS:
                     vastVideoStartedCallback: function() {
-                        console.log("Ad Started!");
-                        adSuccess = true;
+                        updateStatus("Ad Playing...");
                     },
-                    // IF VIDEO ENDS:
                     vastVideoEndedCallback: function() {
-                        console.log("Ad Finished. Waiting for cycle.");
-                        hideAndSchedule();
+                        updateStatus("Ad Complete. Earnings Recorded.");
+                        scheduleRetry(cycleTime);
                     }
                 }
             }
         });
 
-        // WATCHDOG: If nothing happens in 8 seconds, force reload
-        setTimeout(function() {
-            if (!adSuccess) {
-                console.log("Watchdog: Ad stuck. Retrying.");
-                quickRetry();
-            }
-        }, 8000); 
-
-        // 1. Quick Retry (If ad fails, try again in 5 seconds)
-        function quickRetry() {
-            setTimeout(function(){
-               window.location.reload();
-            }, failTime);
+        function scheduleRetry(ms) {
+            // Hide player so we can see the status text
+            document.getElementById('video-container').style.visibility = 'hidden';
+            
+            let seconds = ms / 1000;
+            let countdown = setInterval(function() {
+                seconds--;
+                if(document.getElementById('msg').innerText.includes("Empty") || document.getElementById('msg').innerText.includes("Earnings")) {
+                     document.getElementById('msg').innerText += "."; // Just animate dots
+                }
+                if (seconds <= 0) {
+                    clearInterval(countdown);
+                    window.location.reload();
+                }
+            }, 1000);
         }
 
-        // 2. Long Wait (If ad succeeds, wait 10 mins)
-        function hideAndSchedule() {
-            document.getElementById('video-container').style.display = 'none';
-            setTimeout(function(){
-               window.location.reload();
-            }, cycleTime);
-        }
-
-        // Handle generic errors
-        myPlayer.on('error', function() { quickRetry(); });
+        // Generic Error Handler
+        myPlayer.on('error', function() { 
+            updateStatus("Player Error. reloading..."); 
+            scheduleRetry(failTime); 
+        });
 
     </script>
 </body>
