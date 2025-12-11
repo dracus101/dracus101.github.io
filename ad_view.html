@@ -27,19 +27,13 @@
     <iframe id="backup-frame"></iframe>
 
     <script>
-        // --- CONFIGURATION START ---
-        
-        // 1. HilltopAds Video Tag (Primary)
+        // --- CONFIGURATION ---
         const videoTag = 'https://homelybottle.com/dHmIFHz/d.GRNKvHZtGXUn/hemmM9GuyZdUPlYkuP/T/YF3HMcjQQb2mNRTZQ/t/Ncj/c_ycN/DeYc1qNiQe';
-        
-        // 2. Monetag Direct Link (Backup)
         const backupLink = 'https://otieu.com/4/10310118'; 
+        const cycleTime = 600000; // 10 Minutes
+        // ---------------------
 
-        // 3. Cycle Time (10 Minutes = 600,000 milliseconds)
-        // 10 mins is the safe "High CPM" frequency.
-        const cycleTime = 600000; 
-        
-        // --- CONFIGURATION END ---
+        let adStarted = false;
 
         var myPlayer = fluidPlayer('my-video', {
             layoutControls: {
@@ -50,12 +44,16 @@
             vastOptions: {
                 adList: [{ roll: 'preRoll', vastTag: videoTag }],
                 vastAdvanced: {
-                    // SCENARIO A: Video Fails -> Load Backup
+                    // 1. Standard Error Detection
                     noVastVideoCallback: function() { 
                         console.log("Video Failed/No Fill. Switching to Backup.");
                         loadBackup(); 
                     },
-                    // SCENARIO B: Video Plays -> Wait for end -> Hide
+                    // 2. Success Detection
+                    vastVideoStartedCallback: function() {
+                        console.log("Video Started Successfully.");
+                        adStarted = true; // Mark as success so Watchdog doesn't fire
+                    },
                     vastVideoEndedCallback: function() {
                         console.log("Video Ad Finished.");
                         hideAndSchedule();
@@ -64,8 +62,19 @@
             }
         });
 
+        // --- THE WATCHDOG (Brute Force Fix) ---
+        // If ad hasn't started in 5 seconds, KILL IT and load backup.
+        setTimeout(function() {
+            if (!adStarted) {
+                console.log("Watchdog: Video stuck/loading too long. Forcing Backup.");
+                loadBackup();
+            }
+        }, 5000); 
+
         // Function to Switch to Monetag Backup
         function loadBackup() {
+            if (adStarted) return; // Don't interrupt if video is actually playing
+            
             // Hide Video Player
             document.getElementById('video-container').style.display = 'none';
             
@@ -75,13 +84,12 @@
             frame.style.display = 'block';
 
             // AUTO-CLOSE TIMER:
-            // Since Monetag pages don't close themselves, we force close it after 25 seconds
-            // This simulates a 25s video ad experience.
+            // Force close backup after 25 seconds
             setTimeout(function() {
                 console.log("Backup Ad Duration Over. Hiding.");
-                frame.style.display = 'none'; // Hide the ad
-                frame.src = ""; // Stop loading to save data
-                scheduleNextCycle(); // Start the 10 min wait
+                frame.style.display = 'none'; 
+                frame.src = ""; // Stop data usage
+                scheduleNextCycle(); 
             }, 25000); 
         }
 
@@ -91,11 +99,11 @@
             loadBackup(); 
         });
 
-        // Function to Clean Up and Wait
+        // Clean Up and Wait
         function hideAndSchedule() {
             document.getElementById('video-container').style.display = 'none';
             document.getElementById('backup-frame').style.display = 'none';
-            console.log("Ad sequence done. Waiting " + (cycleTime/1000) + " seconds...");
+            console.log("Ad sequence done. Waiting...");
             
             setTimeout(function(){
                window.location.reload();
