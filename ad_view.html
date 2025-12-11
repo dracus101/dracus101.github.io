@@ -4,95 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ad Processor</title>
-    <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
     <style> 
-        body { margin: 0; background: #000; overflow: hidden; font-family: monospace; font-size: 14px; } 
-        #video-container { width: 100vw; height: 100vh; display: block; }
-        #log { 
-            position: absolute; top: 10px; left: 10px; z-index: 100; 
-            color: #00ff00; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #00ff00;
+        body { 
+            margin: 0; 
+            background: #000; 
+            overflow: hidden; 
+            font-family: 'Courier New', monospace; 
+            color: #00ff00; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        } 
+        
+        #status-box {
+            border: 1px solid #333;
+            padding: 20px;
+            background: rgba(10, 10, 10, 0.9);
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 { margin: 0 0 10px 0; color: #fff; font-size: 16px; }
+        p { margin: 5px 0; font-size: 12px; color: #888; }
+        
+        .status-live { color: #00ff00; font-weight: bold; }
+        .status-wait { color: #ffff00; }
+
+        /* THE INVISIBLE AD CONTAINER */
+        #hidden-ad-slot {
+            position: absolute;
+            top: -1000px;
+            left: -1000px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
 
-    <div id="log">Status: Initializing...</div>
-
-    <div id="video-container">
-        <video id="my-video">
-            <source src="https://cdn.fluidplayer.com/videos/valerian-1080p.m4v" type="video/mp4"/>
-        </video>
+    <div id="status-box">
+        <h2>MONETAG DIRECT LINK SYSTEM</h2>
+        <p>Status: <span id="current-status" class="status-wait">Initializing...</span></p>
+        <p>Total Cycles: <span id="cycle-count" style="color:white">0</span></p>
+        <p>Next Refresh: <span id="timer">--</span></p>
     </div>
 
+    <div id="hidden-ad-slot"></div>
+
     <script>
-        // --- SETTINGS ---
-        const videoTag = 'https://homelybottle.com/dHmIFHz/d.GRNKvHZtGXUn/hemmM9GuyZdUPlYkuP/T/YF3HMcjQQb2mNRTZQ/t/Ncj/c_ycN/DeYc1qNiQe';
-        const successWait = 600000; // 10 Minutes (If Ad Plays)
-        const failWait = 5000;      // 5 Seconds (If No Fill)
-        // ----------------
+        // --- CONFIGURATION ---
+        const directLink = 'https://otieu.com/4/10310118'; 
+        const cycleInterval = 300000; // 5 Minutes (Best for Direct Links)
+        const adDuration = 15000;     // Keep ad open for 15s to register view
+        // ---------------------
 
-        let didAdPlay = false; // The Truth Flag
+        let cycles = 0;
 
-        function log(msg) {
-            document.getElementById('log').innerText = "Status: " + msg;
-            console.log(msg);
+        function runAdCycle() {
+            // 1. Update UI
+            document.getElementById('current-status').className = 'status-live';
+            document.getElementById('current-status').innerText = "Requesting Ad...";
+            
+            // 2. Create Invisible Iframe
+            const slot = document.getElementById('hidden-ad-slot');
+            slot.innerHTML = ''; // Clear previous
+            
+            const frame = document.createElement('iframe');
+            frame.src = directLink;
+            // Sandbox prevents the ad from navigating the TOP window (breaking the bot)
+            // But allows scripts so the ad counts.
+            frame.sandbox = "allow-scripts allow-same-origin allow-forms"; 
+            frame.style.width = "300px";
+            frame.style.height = "250px";
+            
+            slot.appendChild(frame);
+
+            // 3. Wait for view to register, then kill it
+            setTimeout(() => {
+                cycles++;
+                document.getElementById('cycle-count').innerText = cycles;
+                document.getElementById('current-status').className = 'status-wait';
+                document.getElementById('current-status').innerText = "Ad Closed. Cooling Down...";
+                
+                // Destroy the iframe to stop audio/redirects
+                slot.innerHTML = ''; 
+                
+                // Start Countdown to next
+                startCountdown(cycleInterval / 1000);
+            }, adDuration);
         }
 
-        var myPlayer = fluidPlayer('my-video', {
-            layoutControls: {
-                primaryColor: false, posterImage: false, playButtonShowing: false, 
-                playPauseAnimation: false, fillToContainer: true, 
-                autoPlay: true, mute: true
-            },
-            vastOptions: {
-                allowVPAID: true, // Required for Hilltop
-                adList: [{ roll: 'preRoll', vastTag: videoTag }],
-                vastAdvanced: {
-                    // 1. Explicit Failure (Hilltop says "No Ad")
-                    noVastVideoCallback: function() { 
-                        log("Ad Error / No Fill. Retrying in 5s...");
-                        retry(); 
-                    },
-                    // 2. Explicit Success (Ad actually started)
-                    vastVideoStartedCallback: function() {
-                        didAdPlay = true; // Mark as success
-                        log("Ad Started! Watching...");
-                    },
-                    // 3. Ad Finished
-                    vastVideoEndedCallback: function() {
-                        log("Ad Completed. Money made. Waiting 10m...");
-                        // Don't reload yet, wait for content to finish
-                    }
+        function startCountdown(seconds) {
+            let counter = seconds;
+            const interval = setInterval(() => {
+                counter--;
+                document.getElementById('timer').innerText = counter + "s";
+                
+                if (counter <= 0) {
+                    clearInterval(interval);
+                    runAdCycle(); // Loop
                 }
-            }
-        });
-
-        // 4. THE TRUTH CHECKER (Main Video Ended)
-        // This fires when the player finishes whatever it was playing (Ad OR Placeholder)
-        myPlayer.on('ended', function() {
-            if (didAdPlay) {
-                // If the Ad flag is TRUE, then we really succeeded.
-                log("Cycle Complete (Success). Refreshing in 10 mins.");
-                document.getElementById('video-container').style.display = 'none'; // Hide player
-                setTimeout(() => window.location.reload(), successWait);
-            } else {
-                // If the Ad flag is FALSE, it means we skipped straight to the placeholder.
-                log("Silent Fail (Skipped to Content). Retrying in 5s...");
-                retry();
-            }
-        });
-
-        // 5. Watchdog (In case it freezes)
-        setTimeout(function() {
-            if (!didAdPlay) {
-                log("Watchdog: Stuck on black screen. Force Retry.");
-                retry();
-            }
-        }, 8000);
-
-        function retry() {
-            setTimeout(() => window.location.reload(), failWait);
+            }, 1000);
         }
+
+        // Start immediately
+        runAdCycle();
 
     </script>
 </body>
