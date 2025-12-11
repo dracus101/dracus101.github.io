@@ -7,13 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* LIGHTER BACKGROUND so Black Smoke is visible */
-            --bg-color: #1a1a1a; 
-            --glass-panel: rgba(255, 255, 255, 0.05);
-            --border-color: rgba(255, 255, 255, 0.1);
+            /* Slightly lighter background to make black smoke visible */
+            --bg-color: #1e1e1e;
+            --glass-panel: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.05);
             --accent-red: #ff3333;
             --text-main: #ffffff;
-            --text-muted: #aaaaaa;
+            --text-muted: #888888;
         }
 
         body {
@@ -26,7 +26,7 @@
             min-height: 100vh;
         }
 
-        /* CANVAS LAYER (Z-Index -1 puts it BEHIND the text, but in front of BG) */
+        /* CANVAS LAYER */
         #smokeCanvas {
             position: fixed;
             top: 0;
@@ -34,6 +34,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            /* Gradient Background to simulate depth */
             background: radial-gradient(circle at center, #2a2a2a 0%, #111111 100%);
         }
 
@@ -69,11 +70,11 @@
             border-radius: 4px;
             font-size: 0.8rem;
             font-family: 'JetBrains Mono', monospace;
-            color: #ccc;
+            color: #666;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* HERO SECTION - We add IDs/Classes to target these for smoke */
+        /* HERO SECTION */
         .hero {
             min-height: 90vh;
             display: flex;
@@ -94,8 +95,9 @@
             letter-spacing: -3px;
             margin-bottom: 25px;
             color: #fff;
-            /* ID for Smoke Target */
             position: relative;
+            /* ID for Smoke Target */
+            display: inline-block;
         }
 
         .tagline {
@@ -125,7 +127,6 @@
             letter-spacing: 1px;
             transition: all 0.2s;
             position: relative;
-            /* This makes the button a Smoke Emitter */
             z-index: 2;
         }
 
@@ -153,7 +154,7 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        /* SPECS GRID */
+        /* GRID */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -169,15 +170,14 @@
             background: var(--glass-panel);
             border: 1px solid var(--border-color);
             padding: 40px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
             transition: transform 0.3s;
-            /* Class for Smoke Target */
             position: relative;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
             background: rgba(40, 40, 40, 0.4);
         }
 
@@ -292,25 +292,46 @@
 
         let width, height;
         let emitters = [];
+        let smokeImage;
+
+        // 1. GENERATE PROCEDURAL SMOKE SPRITE
+        // This solves the "Circle Problem" by drawing a fuzzy cloud into memory once.
+        function createSmokeSprite() {
+            const size = 128;
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = size;
+            tempCanvas.height = size;
+            const tCtx = tempCanvas.getContext('2d');
+
+            // Create a radial gradient (soft blurry ball)
+            const grad = tCtx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+            grad.addColorStop(0, 'rgba(0, 0, 0, 0.8)'); // Inner Black
+            grad.addColorStop(0.4, 'rgba(0, 0, 0, 0.3)'); // Mid Gray
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Transparent Edge
+
+            tCtx.fillStyle = grad;
+            tCtx.beginPath();
+            tCtx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+            tCtx.fill();
+
+            return tempCanvas;
+        }
+
+        smokeImage = createSmokeSprite();
 
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
-            findEmitters(); // Re-calculate positions on resize
+            findEmitters();
         }
 
-        // Find positions of UI elements to spawn smoke from
         function findEmitters() {
             emitters = [];
-            
-            // 1. The Main Title
             const title = document.getElementById('main-title');
             if(title) {
                 const rect = title.getBoundingClientRect();
                 emitters.push({ x: rect.left, y: rect.top, w: rect.width, h: rect.height });
             }
-
-            // 2. All elements with 'smoke-emitter' class (Cards, Buttons)
             const elements = document.querySelectorAll('.smoke-emitter');
             elements.forEach(el => {
                 const rect = el.getBoundingClientRect();
@@ -319,67 +340,83 @@
         }
 
         window.addEventListener('resize', resize);
-        window.addEventListener('scroll', findEmitters); // Update positions on scroll
-        
-        // Initial setup
-        setTimeout(() => { resize(); }, 100); // Small delay to let DOM render
+        window.addEventListener('scroll', findEmitters);
+        setTimeout(() => { resize(); }, 100);
 
-        class Particle {
+        class SmokeParticle {
             constructor() {
-                this.reset();
+                this.reset(true);
             }
 
-            reset() {
-                // Pick a random emitter
+            reset(firstRun = false) {
                 if (emitters.length > 0) {
                     const target = emitters[Math.floor(Math.random() * emitters.length)];
-                    // Spawn random position along the TOP edge of the element
                     this.x = target.x + Math.random() * target.w;
-                    this.y = target.y + Math.random() * (target.h * 0.5); // Spawn in upper half
+                    this.y = target.y + Math.random() * target.h;
                 } else {
-                    this.x = Math.random() * width;
-                    this.y = height + 10;
+                    this.x = width / 2;
+                    this.y = height + 50;
                 }
 
-                this.size = Math.random() * 15 + 5; // Smoke puff size
-                this.speedY = Math.random() * -1.5 - 0.5; // Rise up
-                this.speedX = Math.random() * 0.6 - 0.3; // Drift side to side
-                this.opacity = Math.random() * 0.5 + 0.1; // Initial opacity
-                this.fadeRate = Math.random() * 0.005 + 0.002;
-                this.growth = Math.random() * 0.2 + 0.05;
+                // Randomize start so they don't all pop in at once
+                if (firstRun) this.y -= Math.random() * 200;
+
+                this.size = Math.random() * 50 + 40; // Base size
+                this.grow = Math.random() * 0.5 + 0.2; // How fast it expands
+                
+                this.vx = Math.random() * 0.4 - 0.2; // Gentle drift
+                this.vy = Math.random() * -1.5 - 0.5; // Upward speed
+                
+                this.life = 0;
+                this.maxLife = Math.random() * 200 + 100;
+                this.alpha = 0;
+                this.maxAlpha = Math.random() * 0.2 + 0.05; // Max opacity (very transparent for layering)
+                this.rotation = Math.random() * 6.28;
+                this.rotationSpeed = Math.random() * 0.02 - 0.01;
             }
 
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.size += this.growth; // Smoke expands as it rises
-                this.opacity -= this.fadeRate; // Smoke fades out
+                this.x += this.vx;
+                this.y += this.vy;
+                this.size += this.grow;
+                this.rotation += this.rotationSpeed;
+                this.life++;
 
-                // If invisible, respawn at a UI element
-                if (this.opacity <= 0) {
+                // Fade In / Fade Out logic
+                if (this.life < 50) {
+                    this.alpha = (this.life / 50) * this.maxAlpha;
+                } else if (this.life > this.maxLife - 50) {
+                    this.alpha = ((this.maxLife - this.life) / 50) * this.maxAlpha;
+                }
+
+                if (this.life >= this.maxLife) {
                     this.reset();
                 }
             }
 
             draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                // PURE BLACK SMOKE
-                ctx.fillStyle = `rgba(0, 0, 0, ${this.opacity})`;
-                ctx.fill();
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.alpha;
+                // Draw the PRE-RENDERED SPRITE instead of a circle
+                ctx.drawImage(smokeImage, -this.size/2, -this.size/2, this.size, this.size);
+                ctx.restore();
             }
         }
 
         const particles = [];
-        const particleCount = 400; // Count
+        // 300 Large, soft particles create a seamless cloud
+        const count = 300; 
 
-        for (let i = 0; i < particleCount; i++) {
-            particles.push(new Particle());
+        for (let i = 0; i < count; i++) {
+            particles.push(new SmokeParticle());
         }
 
         function animate() {
             ctx.clearRect(0, 0, width, height);
             
+            // Draw all particles
             particles.forEach(p => {
                 p.update();
                 p.draw();
