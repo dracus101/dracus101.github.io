@@ -7,13 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Lighter background to contrast with PURE BLACK smoke */
+            /* Lighter background to make BLACK smoke visible */
             --bg-color: #222; 
-            --glass-panel: rgba(255, 255, 255, 0.05);
-            --border-color: rgba(255, 255, 255, 0.1);
+            --glass-panel: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.05);
             --accent-red: #ff3333;
             --text-main: #ffffff;
-            --text-muted: #bbb;
+            --text-muted: #888888;
         }
 
         body {
@@ -34,8 +34,8 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            /* Gradient to give depth */
-            background: radial-gradient(circle at center, #333 0%, #111 100%);
+            /* Gradient Background to simulate depth */
+            background: radial-gradient(circle at center, #2a2a2a 0%, #111111 100%);
         }
 
         /* NAVIGATION */
@@ -65,13 +65,13 @@
         .logo span { color: var(--accent-red); }
 
         .version-badge {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3);
             padding: 5px 12px;
             border-radius: 4px;
             font-size: 0.8rem;
             font-family: 'JetBrains Mono', monospace;
-            color: #ddd;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #666;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* HERO SECTION */
@@ -87,7 +87,6 @@
             z-index: 2;
         }
 
-        /* ID for Smoke Target */
         h1 {
             font-size: 5rem;
             font-weight: 800;
@@ -97,8 +96,9 @@
             margin-bottom: 25px;
             color: #fff;
             position: relative;
-            z-index: 2;
-            text-shadow: 0 0 20px rgba(0,0,0,1); 
+            /* ID for Smoke Target */
+            display: inline-block;
+            text-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
         .tagline {
@@ -107,7 +107,6 @@
             max-width: 600px;
             line-height: 1.6;
             margin-bottom: 40px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         /* BUTTONS */
@@ -130,17 +129,16 @@
             transition: all 0.2s;
             position: relative;
             z-index: 2;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            background: #e0e0e0;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
         }
 
         .btn-secondary {
             padding: 18px 40px;
-            background: rgba(0,0,0,0.6);
+            background: transparent;
             color: #fff;
             border: 1px solid var(--border-color);
             font-weight: 600;
@@ -154,7 +152,7 @@
 
         .btn-secondary:hover {
             border-color: #fff;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         /* GRID */
@@ -170,18 +168,18 @@
         }
 
         .card {
-            background: rgba(30, 30, 30, 0.6);
+            background: var(--glass-panel);
             border: 1px solid var(--border-color);
             padding: 40px;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
             transition: transform 0.3s;
             position: relative;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.3);
-            background: rgba(40, 40, 40, 0.8);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(40, 40, 40, 0.4);
         }
 
         .card h3 {
@@ -222,7 +220,15 @@
             z-index: 2;
         }
 
-        /* MOBILE */
+        .system-req {
+            font-family: 'JetBrains Mono', monospace;
+            color: #666;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        /* MOBILE FIXES */
         @media (max-width: 768px) {
             h1 { font-size: 3rem; }
             nav { padding: 20px; }
@@ -240,7 +246,7 @@
     </nav>
 
     <section class="hero">
-        <div style="margin-bottom: 20px; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 0.8rem;">
+        <div class="system-req" style="margin-bottom: 20px; color: #00ff88;">
             ● SYSTEM STATUS: ONLINE (iRO TESTED)
         </div>
         
@@ -256,7 +262,7 @@
             <a href="#" class="btn-secondary">View Roadmap</a>
         </div>
 
-        <div style="margin-top: 20px; color: #666; font-family: 'JetBrains Mono'; font-size: 0.8rem;">
+        <div class="system-req">
             Requires: Windows 11 • Dedicated GPU Recommended
         </div>
     </section>
@@ -289,21 +295,20 @@
         let emitters = [];
         let smokeImage;
 
-        // 1. CREATE SOLID BLACK SMOKE SPRITE
-        function createThickSmokeSprite() {
-            const size = 256; 
+        // 1. GENERATE PROCEDURAL SMOKE SPRITE
+        // This solves the "Circle Problem" by drawing a fuzzy cloud into memory once.
+        function createSmokeSprite() {
+            const size = 128;
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = size;
             tempCanvas.height = size;
             const tCtx = tempCanvas.getContext('2d');
 
+            // Create a radial gradient (soft blurry ball)
             const grad = tCtx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-            // SOLID BLACK CORE (1.0 Opacity)
-            // Stays totally solid until 60% of the radius
-            grad.addColorStop(0, 'rgba(0, 0, 0, 1)'); 
-            grad.addColorStop(0.6, 'rgba(0, 0, 0, 0.95)'); 
-            // Only fades at the very edge
-            grad.addColorStop(1, 'rgba(0, 0, 0, 0)'); 
+            grad.addColorStop(0, 'rgba(0, 0, 0, 0.9)'); // Inner Black (High Opacity)
+            grad.addColorStop(0.4, 'rgba(0, 0, 0, 0.5)'); // Mid Gray
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Transparent Edge
 
             tCtx.fillStyle = grad;
             tCtx.beginPath();
@@ -313,7 +318,7 @@
             return tempCanvas;
         }
 
-        smokeImage = createThickSmokeSprite();
+        smokeImage = createSmokeSprite();
 
         function resize() {
             width = canvas.width = window.innerWidth;
@@ -339,7 +344,7 @@
         window.addEventListener('scroll', findEmitters);
         setTimeout(() => { resize(); }, 100);
 
-        class ThickSmoke {
+        class SmokeParticle {
             constructor() {
                 this.reset(true);
             }
@@ -348,7 +353,7 @@
                 if (emitters.length > 0) {
                     const target = emitters[Math.floor(Math.random() * emitters.length)];
                     this.x = target.x + Math.random() * target.w;
-                    this.y = target.y + Math.random() * (target.h * 0.8);
+                    this.y = target.y + Math.random() * target.h;
                 } else {
                     this.x = width / 2;
                     this.y = height + 50;
@@ -356,20 +361,21 @@
 
                 if (firstRun) this.y -= Math.random() * 200;
 
-                this.size = Math.random() * 80 + 60; // BIG PARTICLES
-                this.grow = Math.random() * 0.4 + 0.1; 
+                this.size = Math.random() * 50 + 40; 
+                this.grow = Math.random() * 0.5 + 0.2; 
                 
-                this.vx = Math.random() * 0.6 - 0.3; 
-                this.vy = Math.random() * -1.5 - 0.5; // Rise Up
+                this.vx = Math.random() * 0.4 - 0.2; 
+                this.vy = Math.random() * -1.5 - 0.5; 
                 
                 this.life = 0;
                 this.maxLife = Math.random() * 200 + 100;
+                
+                // === THE FIX: 70% OPACITY (0.7) ===
+                this.alpha = 0;
+                this.maxAlpha = 0.7; // Changed from 0.2 to 0.7
+                
                 this.rotation = Math.random() * 6.28;
                 this.rotationSpeed = Math.random() * 0.02 - 0.01;
-                
-                // HIGH OPACITY LOCK (90% - 100%)
-                this.maxAlpha = Math.random() * 0.1 + 0.9; 
-                this.alpha = 0;
             }
 
             update() {
@@ -379,14 +385,16 @@
                 this.rotation += this.rotationSpeed;
                 this.life++;
 
-                // Very Fast Fade In (Appear solid instantly)
-                if (this.life < 10) {
-                    this.alpha = (this.life / 10) * this.maxAlpha;
-                } else if (this.life > this.maxLife - 60) {
-                    this.alpha = ((this.maxLife - this.life) / 60) * this.maxAlpha;
+                // Fade In / Fade Out logic
+                if (this.life < 50) {
+                    this.alpha = (this.life / 50) * this.maxAlpha;
+                } else if (this.life > this.maxLife - 50) {
+                    this.alpha = ((this.maxLife - this.life) / 50) * this.maxAlpha;
                 }
 
-                if (this.life >= this.maxLife) this.reset();
+                if (this.life >= this.maxLife) {
+                    this.reset();
+                }
             }
 
             draw() {
@@ -394,17 +402,16 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 ctx.globalAlpha = this.alpha;
-                // Draw the High-Contrast Sprite
                 ctx.drawImage(smokeImage, -this.size/2, -this.size/2, this.size, this.size);
                 ctx.restore();
             }
         }
 
         const particles = [];
-        const count = 250; // Dense cloud
+        const count = 300; 
 
         for (let i = 0; i < count; i++) {
-            particles.push(new ThickSmoke());
+            particles.push(new SmokeParticle());
         }
 
         function animate() {
