@@ -6,6 +6,19 @@
     <title>koreControl | Visual AI Automation</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
+
+        #visionOverlay {
+        position: absolute;
+        top: 18px;
+        right: 50px;
+        pointer-events: none;
+        opacity: 0.7;
+        }
+
+
+
+
+        
         :root {
             /* Lighter background to make BLACK smoke visible */
             --bg-color: #222; 
@@ -243,6 +256,7 @@
     <nav>
         <div class="logo">kore<span>Control</span></div>
         <div class="version-badge">ALPHA v1.0.0</div>
+        <canvas id="visionOverlay" width="180" height="80"></canvas>
     </nav>
 
     <section class="hero">
@@ -428,6 +442,38 @@
             requestAnimationFrame(animate);
         }
         animate();
+
+        // ===== NAV VISION OVERLAY (LOCAL ONLY) =====
+        const visionCanvas = document.getElementById('visionOverlay');
+        const vctx = visionCanvas.getContext('2d');
+
+        function drawVisionBoxes() {
+            vctx.clearRect(0, 0, visionCanvas.width, visionCanvas.height);
+
+            const boxCount = Math.floor(Math.random() * 4) + 2;
+
+            for (let i = 0; i < boxCount; i++) {
+                const x = Math.random() * 140;
+                const y = Math.random() * 50;
+                const w = Math.random() * 40 + 20;
+                const h = Math.random() * 20 + 15;
+
+                vctx.strokeStyle = Math.random() > 0.5 ? '#ff3333' : '#00ff88';
+                vctx.lineWidth = 1;
+                vctx.strokeRect(x, y, w, h);
+            }
+        }
+
+        // Flicker like CV debug overlay
+        setInterval(drawVisionBoxes, 350);
+
+
+
+
+
+
+
+        
 
     </script>
 </body>
