@@ -90,6 +90,7 @@
             letter-spacing: -3px;
             margin-bottom: 25px;
             color: #fff;
+            position: relative;
             display: inline-block;
             text-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
@@ -164,6 +165,7 @@
             padding: 40px;
             backdrop-filter: blur(5px);
             transition: transform 0.3s;
+            position: relative;
         }
 
         .card:hover {
@@ -186,6 +188,7 @@
             color: var(--text-muted);
             line-height: 1.6;
             font-size: 0.95rem;
+            margin-bottom: 0;
         }
 
         .status-dot {
@@ -204,6 +207,8 @@
             text-align: center;
             color: #666;
             font-size: 0.8rem;
+            position: relative;
+            z-index: 2;
         }
 
         .system-req {
@@ -227,7 +232,7 @@
 
 <nav>
     <div class="logo">kore<span>Control</span></div>
-    <div class="version-badge">ALPHA v1.0.0</div>
+    <div class="version-badge">ALPHA v0.9</div>
 </nav>
 
 <section class="hero">
@@ -238,35 +243,25 @@
     <h1 id="main-title">Visual<br>Supremacy.</h1>
 
     <p class="tagline">
-        The first truly visual AI for Ragnarok Online. No packets. No memory injection.
-        Just pure optical logic running on your GPU/CPU.
-        <br><br>
-        <span style="color:#aaa;font-size:0.9rem;">
-            ⚠ Alpha release — unstable, hardware-dependent, and under active development.
-        </span>
+        The first truly visual AI for Ragnarok Online. No packets. No memory injection. 
+        Just pure optical logic running on your GPU.
     </p>
 
     <div class="btn-group">
-        <a
-            href="https://github.com/koreControl/koreControl.github.io/releases/download/v1.0.0-alpha/KoreControl_portable.7z"
-            class="btn-primary smoke-emitter"
-            download
-        >
-            Download Alpha
-        </a>
+        <a href="#" class="btn-primary smoke-emitter">Download Alpha</a>
 
         <a
-            href="https://github.com/koreControl/koreControl.github.io#readme"
-            class="btn-secondary"
-            target="_blank"
-            rel="noopener"
+          href="https://github.com/koreControl/koreControl.github.io#readme"
+          class="btn-secondary"
+          target="_blank"
+          rel="noopener"
         >
-            View Roadmap
+          View Roadmap
         </a>
     </div>
 
     <div class="system-req">
-        Requires: Windows 11/10 • Dedicated GPU Recommended
+        Requires: Windows 11 • Dedicated GPU Recommended
     </div>
 </section>
 
@@ -277,21 +272,21 @@
     </div>
     <div class="card smoke-emitter">
         <h3>NAVIGATOR AI</h3>
-        <p>Autonomous mapping with 80% accuracy. Navigates complex terrain visually. <em>Note: May struggle with complex NPC dialogue chains in Alpha.</em></p>
+        <p>Autonomous mapping with 80% accuracy. Navigates complex terrain visually. <em>Note: May struggle with complex NPC dialogue chains in v0.9.</em></p>
     </div>
     <div class="card smoke-emitter">
         <h3>PERFORMANCE</h3>
-        <p>Slower than packet injection but infinitely safer. Trade raw speed for account security.</p>
+        <p>Slower than packet injection but infinitely safer. Trade raw speed for account security. Optimized for Windows 11 kernel.</p>
     </div>
 </div>
 
 <footer class="footer">
     <p>KORE CONTROL PROJECT © 2025<br>Educational Proof-of-Concept. Use at your own risk.</p>
-    <p style="margin-top: 10px; color: #444;">Known Issues: Auto-Loot (Beta) • Skill Mapping (Beta) • NPC Loops</p>
+    <p style="margin-top: 10px; color: #444;">Known Issues: Auto-Loot (In Dev) • Skill Mapping (Beta) • NPC Loops</p>
 </footer>
 
 <script>
-    // smoke code untouched
+    // ORIGINAL smoke code untouched
 </script>
 
 </body>
