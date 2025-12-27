@@ -13,7 +13,6 @@
           left: 50%;
           transform: translateX(-50%);
           pointer-events: none;
-          opacity: 0.7;
         }
 
 
@@ -451,6 +450,8 @@
 
         function drawVisionBoxes() {
             vctx.clearRect(0, 0, visionCanvas.width, visionCanvas.height);
+            visionCanvas.style.opacity = (Math.random() * 0.3 + 0.4).toFixed(2);
+
 
             const boxCount = Math.floor(Math.random() * 4) + 2;
 
