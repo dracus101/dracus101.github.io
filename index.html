@@ -53,9 +53,6 @@
             font-weight: 700;
             letter-spacing: -1px;
             color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .logo span { color: var(--accent-red); }
@@ -89,9 +86,6 @@
             text-transform: uppercase;
             letter-spacing: -3px;
             margin-bottom: 25px;
-            color: #fff;
-            position: relative;
-            display: inline-block;
             text-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
@@ -100,6 +94,13 @@
             color: var(--text-muted);
             max-width: 600px;
             line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .alpha-warning {
+            font-size: 0.85rem;
+            color: #999;
+            font-family: 'JetBrains Mono', monospace;
             margin-bottom: 40px;
         }
 
@@ -120,13 +121,6 @@
             border-radius: 2px;
             letter-spacing: 1px;
             transition: all 0.2s;
-            position: relative;
-            z-index: 2;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
         }
 
         .btn-secondary {
@@ -139,13 +133,6 @@
             text-transform: uppercase;
             border-radius: 2px;
             letter-spacing: 1px;
-            transition: all 0.2s;
-            backdrop-filter: blur(5px);
-        }
-
-        .btn-secondary:hover {
-            border-color: #fff;
-            background: rgba(255, 255, 255, 0.05);
         }
 
         .grid {
@@ -153,7 +140,6 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             max-width: 1200px;
-            width: 100%;
             margin: 80px auto;
             padding: 0 20px;
             z-index: 2;
@@ -164,40 +150,6 @@
             border: 1px solid var(--border-color);
             padding: 40px;
             backdrop-filter: blur(5px);
-            transition: transform 0.3s;
-            position: relative;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(40, 40, 40, 0.4);
-        }
-
-        .card h3 {
-            font-family: 'JetBrains Mono', monospace;
-            color: #fff;
-            font-size: 1.1rem;
-            margin-top: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card p {
-            color: var(--text-muted);
-            line-height: 1.6;
-            font-size: 0.95rem;
-            margin-bottom: 0;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #00ff88;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 10px #00ff88;
         }
 
         .footer {
@@ -207,22 +159,7 @@
             text-align: center;
             color: #666;
             font-size: 0.8rem;
-            position: relative;
             z-index: 2;
-        }
-
-        .system-req {
-            font-family: 'JetBrains Mono', monospace;
-            color: #666;
-            margin-top: 20px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 3rem; }
-            nav { padding: 20px; }
-            .hero { padding-top: 120px; }
         }
     </style>
 </head>
@@ -243,9 +180,13 @@
     <h1 id="main-title">Visual<br>Supremacy.</h1>
 
     <p class="tagline">
-        The first truly visual AI for Ragnarok Online. No packets. No memory injection. 
+        The first truly visual AI for Ragnarok Online. No packets. No memory injection.
         Just pure optical logic running on your GPU.
     </p>
+
+    <div class="alpha-warning">
+        △ Alpha release — unstable, hardware-dependent, and under active development.
+    </div>
 
     <div class="btn-group">
         <a href="#" class="btn-primary smoke-emitter">Download Alpha</a>
@@ -265,28 +206,12 @@
     </div>
 </section>
 
-<div class="grid">
-    <div class="card smoke-emitter">
-        <h3><span class="status-dot"></span> UNDETECTABLE</h3>
-        <p>Unlike packet bots that trigger server-side flags, koreControl sees the screen like a human. It reads pixels, not code. 100% external.</p>
-    </div>
-    <div class="card smoke-emitter">
-        <h3>NAVIGATOR AI</h3>
-        <p>Autonomous mapping with 80% accuracy. Navigates complex terrain visually. <em>Note: May struggle with complex NPC dialogue chains in v0.9.</em></p>
-    </div>
-    <div class="card smoke-emitter">
-        <h3>PERFORMANCE</h3>
-        <p>Slower than packet injection but infinitely safer. Trade raw speed for account security. Optimized for Windows 11 kernel.</p>
-    </div>
-</div>
-
 <footer class="footer">
     <p>KORE CONTROL PROJECT © 2025<br>Educational Proof-of-Concept. Use at your own risk.</p>
-    <p style="margin-top: 10px; color: #444;">Known Issues: Auto-Loot (In Dev) • Skill Mapping (Beta) • NPC Loops</p>
 </footer>
 
 <script>
-    // ORIGINAL smoke code untouched
+/* YOUR SMOKE / CANVAS CODE — UNCHANGED */
 </script>
 
 </body>
