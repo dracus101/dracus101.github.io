@@ -1,4 +1,4 @@
-# VisualKore
+# KoreControl
 This is an alpha release. There are a lot of bugs which need to be addressed.
 The models are not that strong yet, and performance is highly dependent on your hardware. Users can fine-tune some parameters in the config files, which can help. We expect to get most bugs out by the Beta release, which should be planned after we see the response from users.
 
@@ -8,4 +8,4 @@ The bot should be able to navigate from the last save point to the intended map 
 
 As a general rule, keep an eye on the bot.
 
-Currently, VisualKore cannot run on servers protected by Gepard Shield. This will be handled in the Beta release as well.
+Currently, KoreControl cannot run on servers protected by Gepard Shield. This will be handled in the Beta release as well.
